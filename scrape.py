@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 import math
 import re
 import time
-
+import pickle
 
 driver = webdriver.Chrome('/Users/nataliedelrossi/Downloads/chromedriver')
 
@@ -32,6 +32,13 @@ def get_wine_links(driver):
 
     return wine_links
 
+
+# once done with collecting links - pickle them so we don't have to run the scraping again
+# with open('outfile', 'wb') as wine_pickle:
+#     pickle.dump(wine_links, wine_pickle)
+
+# with open ('outfile', 'rb') as wine_pickle:
+#     links = pickle.load(wine_pickle)
 # driver.close()
 
 # driver.quit()
