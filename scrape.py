@@ -3,35 +3,34 @@ from bs4 import BeautifulSoup
 import html5lib
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-
+import math
+import re
 import time
 
 
-# url = 'https://www.vivino.com/explore?e=eJzLLbI11jNVy83MszU0UMtNrLA1MVBLrrQNDVZLBhIuagW2hmrpabZliUWZqSWJOWr5SbZFiSWZeenF8YllqUWJ6alq-bYpqcXJauUl0bFAxWDKCEIZQygTCGUOlTNRK7bNqwQAfzEoDA=='
-# r = requests.get(url)
-# print(r.content)
-
 driver = webdriver.Chrome('/Users/nataliedelrossi/Downloads/chromedriver')
 
-# driver.get('https://www.vivino.com/explore?e=eJzLLbI11jNVy83MszU0UMtNrLA1MVBLrrQNDVZLBhIuagW2hmrpabZliUWZqSWJOWr5SbZFiSWZeenF8YllqUWJ6alq-bYpqcXJauUl0bFAxWDKCEIZQygTCGUOlTNRK7bNqwQAfzEoDA==')
-driver.get('https://www.vivino.com/explore?e=eJwNyTEOgCAQBMDfbI2F5Xb-wFibE09CImAOQuT32kwzyTghxUyHJC9n5-AHtxX-Z8Hzb7jYxaI2uVEOmrSYQ92lq0lQFJ5aPSrz-ADEhhoc')
+driver.get('https://www.vivino.com/explore?e=eJwNxEEKgCAUBcDbvGUo1fLtukG0jp-ZCKmhInn7msWEzHGYEXykVgjyclIwndsK87fgoYa72CR7W-VGOpil-ujKLs1mcRaJpy0GhbF_488agQ==')
 
+# find total number of wines on the page so that we can caluclate number of scrolls
+# xpath is giving description of what wines are displayed and how many
+def get_wine_links(driver):
+    num_wines = int(re.search(r"(?<=Showing ).*?(?= wines)", driver.find_element_by_xpath("""//*[@id="explore-page-app"]/div/div/h2""").text).group(0))
+    # we know that each "scroll" == 25 wines
+    num_scrolls = math.ceil(num_wines/25)
 
-# first pass at getting winery names - no scrolling
-wines = driver.find_elements_by_css_selector("a.anchor__anchor--2QZvA")
-# CSS selector found by inspecting site 
-wineries = []
-testing = []
-for wine in wines:
-    wineries.append(wine.find_elements_by_css_selector("span.vintageTitle__winery--2YoIr"))
-    # appending all of the selenium element by css_selector
-for i in wineries:
-    if i:
-        testing.append(i[0].text)
-        # returned many empty lists, now appending the text properties of the selenium element we have
+    # while number of scrolls is greater than 0, keep scrolling to the end of the page, wait 15 seconds to give time to load, then continue to the next page
+    while num_scrolls > 0 : 
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(15)
+        num_scrolls -= 1
 
-# driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    # get links for all the wines -- ignoring the following terms so that we only get the specific urls for the wines and not the regions, countries, or social media
+    wines = driver.find_elements_by_css_selector("a.anchor__anchor--2QZvA")
+    ignore = ['wine-countries', 'wine-regions', 'instagram', 'facebook', 'twitter', 'redirect']
+    wine_links = [wine.get_attribute('href') for wine in wines if not any(ig in wine.get_attribute('href') for ig in ignore)]
 
+    return wine_links
 
 # driver.close()
 
