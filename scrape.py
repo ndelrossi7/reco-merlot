@@ -15,6 +15,11 @@ driver.get('https://www.vivino.com/explore?e=eJwNxEEKgCAUBcDbvGUo1fLtukG0jp-ZCKm
 # find total number of wines on the page so that we can caluclate number of scrolls
 # xpath is giving description of what wines are displayed and how many
 def get_wine_links(driver):
+    """
+    Takes in our driver and allows us to see how many wines we have and what rating and price range it is in.
+    Then dynamically scrolls to the end of the page and saves every link for each wine.
+    """
+    print(driver.find_element_by_xpath("""//*[@id="explore-page-app"]/div/div/h2""").text)
     num_wines = int(re.search(r"(?<=Showing ).*?(?= wines)", driver.find_element_by_xpath("""//*[@id="explore-page-app"]/div/div/h2""").text).group(0))
     # we know that each "scroll" == 25 wines
     num_scrolls = math.ceil(num_wines/25)
@@ -32,10 +37,11 @@ def get_wine_links(driver):
 
     return wine_links
 
+all_wine = get_wine_links(driver)
 
 # once done with collecting links - pickle them so we don't have to run the scraping again
-# with open('outfile', 'wb') as wine_pickle:
-#     pickle.dump(wine_links, wine_pickle)
+ with open('outfile', 'wb') as wine_pickle:
+        pickle.dump(all_wine, wine_pickle)
 
 # with open ('outfile', 'rb') as wine_pickle:
 #     links = pickle.load(wine_pickle)
